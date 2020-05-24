@@ -52,9 +52,12 @@ The game is over as soon as one of the sides run out of stones. The player who s
 them and puts them in his/hers Kalah. The winner of the game is the player who has the most stones in his Kalah.
 #### Endpoint design specification
 1. Creation of the game should be possible with the command:
+ ```shell script
+
  curl --header "Content-Type: application/json" \
  --request POST \
  http://<host>:<port>/games
+```
  Response:
  HTTP code: 201
  Response Body: { "id": "1234", "uri": "http://<host>:<port>/games/1234" }
