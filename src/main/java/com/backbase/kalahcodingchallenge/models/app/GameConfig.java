@@ -1,4 +1,4 @@
-package com.backbase.kalahcodingchallenge.model;
+package com.backbase.kalahcodingchallenge.models.app;
 
 import java.util.*;
 import java.util.stream.Collectors;

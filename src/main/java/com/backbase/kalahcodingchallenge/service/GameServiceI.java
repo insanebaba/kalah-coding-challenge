@@ -3,10 +3,10 @@ package com.backbase.kalahcodingchallenge.service;
 import com.backbase.kalahcodingchallenge.exception.GameDoesNotExistException;
 import com.backbase.kalahcodingchallenge.exception.InvalidMoveException;
 import com.backbase.kalahcodingchallenge.exception.NoMoreMovesPossibleException;
-import com.backbase.kalahcodingchallenge.model.GameModel;
+import com.backbase.kalahcodingchallenge.models.dao.GameDAO;
 
 public interface GameServiceI {
-    public GameModel createNewGame();
+    GameDAO createNewGame();
 
-    public GameModel makeMove(int gameId, int pitId) throws GameDoesNotExistException, NoMoreMovesPossibleException, InvalidMoveException;
+    GameDAO makeMove(int gameId, int pitId) throws GameDoesNotExistException, NoMoreMovesPossibleException, InvalidMoveException;
 }

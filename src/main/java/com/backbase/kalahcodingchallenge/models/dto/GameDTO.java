@@ -1,4 +1,4 @@
-package com.backbase.kalahcodingchallenge.model;
+package com.backbase.kalahcodingchallenge.models.dto;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;

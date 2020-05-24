@@ -1,4 +1,4 @@
-package com.backbase.kalahcodingchallenge.model;
+package com.backbase.kalahcodingchallenge.models.dao;
 
 public enum GameCurrentStatus {
     STARTED,

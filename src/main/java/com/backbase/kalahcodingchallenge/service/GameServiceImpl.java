@@ -3,19 +3,18 @@ package com.backbase.kalahcodingchallenge.service;
 import com.backbase.kalahcodingchallenge.exception.GameDoesNotExistException;
 import com.backbase.kalahcodingchallenge.exception.InvalidMoveException;
 import com.backbase.kalahcodingchallenge.exception.NoMoreMovesPossibleException;
-import com.backbase.kalahcodingchallenge.model.GameConfig;
-import com.backbase.kalahcodingchallenge.model.GameCurrentStatus;
-import com.backbase.kalahcodingchallenge.model.GameModel;
+import com.backbase.kalahcodingchallenge.models.app.GameConfig;
+import com.backbase.kalahcodingchallenge.models.dao.GameCurrentStatus;
+import com.backbase.kalahcodingchallenge.models.dao.GameDAO;
 import com.backbase.kalahcodingchallenge.repository.GameCRUDRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-import static com.backbase.kalahcodingchallenge.model.GameConfig.PLAYER1_KALAH_ID;
-import static com.backbase.kalahcodingchallenge.model.GameConfig.PLAYER2_KALAH_ID;
-import static com.backbase.kalahcodingchallenge.model.GameCurrentStatus.PLAYER1_SHOULD_MOVE_NOW;
-import static com.backbase.kalahcodingchallenge.model.GameCurrentStatus.PLAYER2_SHOULD_MOVE_NOW;
+import static com.backbase.kalahcodingchallenge.models.app.GameConfig.*;
+import static com.backbase.kalahcodingchallenge.models.dao.GameCurrentStatus.PLAYER1_SHOULD_MOVE_NOW;
+import static com.backbase.kalahcodingchallenge.models.dao.GameCurrentStatus.PLAYER2_SHOULD_MOVE_NOW;
 
 @Service
 public class GameServiceImpl implements GameServiceI {
@@ -27,13 +26,13 @@ public class GameServiceImpl implements GameServiceI {
     }
 
     @Override
-    public GameModel createNewGame() {
-        return gameCRUDRepository.save(new GameModel());
+    public GameDAO createNewGame() {
+        return gameCRUDRepository.save(GameDAO.newGame());
     }
 
     @Override
-    public GameModel makeMove(final int gameId, final int pitId) throws GameDoesNotExistException, NoMoreMovesPossibleException, InvalidMoveException {
-        Optional<GameModel> optionalGame = gameCRUDRepository.findById(gameId);
+    public GameDAO makeMove(final int gameId, final int pitId) throws GameDoesNotExistException, NoMoreMovesPossibleException, InvalidMoveException {
+        Optional<GameDAO> optionalGame = gameCRUDRepository.findById(gameId);
 
         if (optionalGame.isEmpty()) throw new GameDoesNotExistException(gameId);
 
@@ -42,16 +41,16 @@ public class GameServiceImpl implements GameServiceI {
         var workingPitId = pitId - 1;
 
         //check if the pitID is valid else throw exception
-        if (pitId > GameConfig.PITS_SIZE || pitId < 1 || pitId % 7 == 0 || gameModel.pits()[workingPitId] == 0 || !isValidPitForCurrentPlayerMove(gameModel, workingPitId)) {
+        if (pitId > PITS_SIZE || pitId < 1 || pitId % 7 == 0 || gameModel.pits()[workingPitId] == 0 || !isValidPitForCurrentPlayerMove(gameModel, workingPitId)) {
             throw new InvalidMoveException(gameId, pitId);
         }
 
         //Check if this is when the game started, either of the players can make first move
         if (gameModel.status() == GameCurrentStatus.STARTED) {
             if (GameConfig.PLAYER1_PITS_IDS.contains(workingPitId)) {
-                gameModel = new GameModel(gameModel, PLAYER1_SHOULD_MOVE_NOW);
+                gameModel = new GameDAO(gameModel, PLAYER1_SHOULD_MOVE_NOW);
             } else {
-                gameModel = new GameModel(gameModel, PLAYER2_SHOULD_MOVE_NOW);
+                gameModel = new GameDAO(gameModel, PLAYER2_SHOULD_MOVE_NOW);
             }
             //persist in repository
             gameCRUDRepository.save(gameModel);
@@ -98,20 +97,20 @@ public class GameServiceImpl implements GameServiceI {
                 // Are All My pits empty -> take all opposite pits stones to my kalah
                 if (areAllMyPitsEmpty(gameModel)) {
                     moveAllStonesOfOppositePlayerToCurrentPlayerKalah(gameModel);
-                    gameModel = new GameModel(gameModel, GameCurrentStatus.FINISHED);
+                    gameModel = new GameDAO(gameModel, GameCurrentStatus.FINISHED);
                 } else
 
                     // Are All opposite pits empty -> take all my stones to opposite kalah
                     if (areAllPlayerPitsEmptyForOppositePlayer(gameModel)) {
-                    moveAllStonesOfCurrentPlayerToOppositePlayerKalah(gameModel);
-                    gameModel = new GameModel(gameModel, GameCurrentStatus.FINISHED);
+                    moveAllStonesOfCurrentPlayerToOppositePlayerKalah(gameModel,pitId);
+                    gameModel = new GameDAO(gameModel, GameCurrentStatus.FINISHED);
                 } else
                     //Update game status if not landed in my own Kalah
                     //If ended in my kalah , then I get another turn
                     if (PLAYER1_SHOULD_MOVE_NOW.equals(gameModel.status()) && !PLAYER1_KALAH_ID.equals(nextPitId)) {
-                    gameModel = new GameModel(gameModel, PLAYER2_SHOULD_MOVE_NOW);
+                    gameModel = new GameDAO(gameModel, PLAYER2_SHOULD_MOVE_NOW);
                 } else if (PLAYER2_SHOULD_MOVE_NOW.equals(gameModel.status()) && !PLAYER2_KALAH_ID.equals(nextPitId)) {
-                    gameModel = new GameModel(gameModel, PLAYER1_SHOULD_MOVE_NOW);
+                    gameModel = new GameDAO(gameModel, PLAYER1_SHOULD_MOVE_NOW);
                 }
             }
             nextPitId = findNextPitId(nextPitId, skippableKalahId);
@@ -121,74 +120,70 @@ public class GameServiceImpl implements GameServiceI {
         return gameModel;
     }
 
-    private void moveAllStonesOfCurrentPlayerToOppositePlayerKalah(GameModel gameModel) {
-        switch (gameModel.status()) {
+    private void moveAllStonesOfCurrentPlayerToOppositePlayerKalah(GameDAO gameDAO,int pitId) throws InvalidMoveException {
+        switch (gameDAO.status()) {
             case PLAYER1_SHOULD_MOVE_NOW -> GameConfig.PLAYER1_PITS_IDS.forEach(pitIndex -> {
-                gameModel.pits()[PLAYER2_KALAH_ID] += gameModel.pits()[pitIndex];
-                gameModel.pits()[pitIndex] = 0;
+                gameDAO.pits()[PLAYER2_KALAH_ID] += gameDAO.pits()[pitIndex];
+                gameDAO.pits()[pitIndex] = 0;
             });
-            case PLAYER2_SHOULD_MOVE_NOW -> {
-                GameConfig.PLAYER2_PITS_IDS.forEach(pitIndex -> {
-                    gameModel.pits()[PLAYER1_KALAH_ID] += gameModel.pits()[pitIndex];
-                    gameModel.pits()[pitIndex] = 0;
-                });
-            }
-            default -> throw new IllegalStateException("Unexpected value: " + gameModel.status());
+            case PLAYER2_SHOULD_MOVE_NOW -> GameConfig.PLAYER2_PITS_IDS.forEach(pitIndex -> {
+                gameDAO.pits()[PLAYER1_KALAH_ID] += gameDAO.pits()[pitIndex];
+                gameDAO.pits()[pitIndex] = 0;
+            });
+            default -> throw new InvalidMoveException(gameDAO.gameId(),pitId);
         }
     }
 
-    private boolean areAllPlayerPitsEmptyForOppositePlayer(GameModel gameModel) {
-        return switch (gameModel.status()) {
-            case PLAYER1_SHOULD_MOVE_NOW -> GameConfig.PLAYER2_PITS_IDS.stream().allMatch(pitIndex -> gameModel.pits()[pitIndex] == 0);
-            case PLAYER2_SHOULD_MOVE_NOW -> GameConfig.PLAYER1_PITS_IDS.stream().allMatch(pitIndex -> gameModel.pits()[pitIndex] == 0);
+    private boolean areAllPlayerPitsEmptyForOppositePlayer(GameDAO gameDAO) {
+        return switch (gameDAO.status()) {
+            case PLAYER1_SHOULD_MOVE_NOW -> GameConfig.PLAYER2_PITS_IDS.stream().allMatch(pitIndex -> gameDAO.pits()[pitIndex] == 0);
+            case PLAYER2_SHOULD_MOVE_NOW -> GameConfig.PLAYER1_PITS_IDS.stream().allMatch(pitIndex -> gameDAO.pits()[pitIndex] == 0);
             case FINISHED, STARTED -> false;
         };
     }
 
-    private void moveAllStonesOfOppositePlayerToCurrentPlayerKalah(GameModel gameModel) {
-        switch (gameModel.status()) {
+    private void moveAllStonesOfOppositePlayerToCurrentPlayerKalah(GameDAO gameDAO) {
+        switch (gameDAO.status()) {
             case PLAYER1_SHOULD_MOVE_NOW -> GameConfig.PLAYER2_PITS_IDS.forEach(pitIndex -> {
-                gameModel.pits()[PLAYER1_KALAH_ID] += gameModel.pits()[pitIndex];
-                gameModel.pits()[pitIndex] = 0;
+                gameDAO.pits()[PLAYER1_KALAH_ID] += gameDAO.pits()[pitIndex];
+                gameDAO.pits()[pitIndex] = 0;
             });
-            case PLAYER2_SHOULD_MOVE_NOW -> {
-                GameConfig.PLAYER1_PITS_IDS.forEach(pitIndex -> {
-                    gameModel.pits()[PLAYER2_KALAH_ID] += gameModel.pits()[pitIndex];
-                    gameModel.pits()[pitIndex] = 0;
-                });
-            }
-            default -> throw new IllegalStateException("Unexpected value: " + gameModel.status());
+            case PLAYER2_SHOULD_MOVE_NOW -> GameConfig.PLAYER1_PITS_IDS.forEach(pitIndex -> {
+                gameDAO.pits()[PLAYER2_KALAH_ID] += gameDAO.pits()[pitIndex];
+                gameDAO.pits()[pitIndex] = 0;
+            });
+            default -> throw new IllegalStateException("Unexpected value: " + gameDAO.status());
         }
     }
 
     /**
      * Check if the current Player index are empty
      *
-     * @param gameModel Model to test for
+     * @param gameDAO Model to test for
      * @return if all the pits of current player are empty
      */
-    private boolean areAllMyPitsEmpty(GameModel gameModel) {
-        return switch (gameModel.status()) {
-            case PLAYER1_SHOULD_MOVE_NOW -> GameConfig.PLAYER1_PITS_IDS.stream().allMatch(pitIndex -> gameModel.pits()[pitIndex] == 0);
-            case PLAYER2_SHOULD_MOVE_NOW -> GameConfig.PLAYER2_PITS_IDS.stream().allMatch(pitIndex -> gameModel.pits()[pitIndex] == 0);
+    private boolean areAllMyPitsEmpty(GameDAO gameDAO) {
+        return switch (gameDAO.status()) {
+            case PLAYER1_SHOULD_MOVE_NOW -> GameConfig.PLAYER1_PITS_IDS.stream().allMatch(pitIndex -> gameDAO.pits()[pitIndex] == 0);
+            case PLAYER2_SHOULD_MOVE_NOW -> GameConfig.PLAYER2_PITS_IDS.stream().allMatch(pitIndex -> gameDAO.pits()[pitIndex] == 0);
             case FINISHED, STARTED -> false;
         };
     }
 
     private Integer findNextPitId(Integer workingPitId, Integer skippableKalahId) {
-        if (workingPitId != (GameConfig.PITS_SIZE / 2) - 2 && workingPitId < (GameConfig.PITS_SIZE - 2))
+        if (workingPitId != (PITS_SIZE / 2) - 2 && workingPitId < (PITS_SIZE - 2))
             return workingPitId + 1;
-        else if (workingPitId + 1 == skippableKalahId && workingPitId < GameConfig.PITS_SIZE / 2)
+        else if (workingPitId + 1 == skippableKalahId && workingPitId < PITS_SIZE / 2)
             return workingPitId + 2;
         return 0;
     }
 
-    private boolean isValidPitForCurrentPlayerMove(GameModel gameModel, int workingPitId) throws NoMoreMovesPossibleException {
-        return switch (gameModel.status()) {
+    private boolean isValidPitForCurrentPlayerMove(GameDAO gameDAO, int workingPitId) throws NoMoreMovesPossibleException {
+        return switch (gameDAO.status()) {
             case STARTED -> GameConfig.PLAYER1_PITS_IDS.contains(workingPitId) || GameConfig.PLAYER2_PITS_IDS.contains(workingPitId);
             case PLAYER1_SHOULD_MOVE_NOW -> GameConfig.PLAYER1_PITS_IDS.contains(workingPitId);
             case PLAYER2_SHOULD_MOVE_NOW -> GameConfig.PLAYER2_PITS_IDS.contains(workingPitId);
-            case FINISHED -> throw new NoMoreMovesPossibleException(gameModel.gameId(), workingPitId);
+            case FINISHED -> throw new NoMoreMovesPossibleException(gameDAO.gameId(), workingPitId);
         };
     }
 }
