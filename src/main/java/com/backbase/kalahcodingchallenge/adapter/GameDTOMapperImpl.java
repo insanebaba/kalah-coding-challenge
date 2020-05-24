@@ -36,14 +36,12 @@ public class GameDTOMapperImpl implements GameDTOMapperI {
         String url = createUrl(gameModel);
 
         return new GameDTO(gameModel.gameId(),
-                url,
-                IntStream.range(0, gameModel.pits().length).boxed().collect(Collectors.toMap(i -> i + 1, i -> gameModel.pits()[i], (a, b) -> b, TreeMap::new))
-        );
+                url, null);
     }
 
     private String createUrl(GameModel gameModel) {
         var request = ServletUriComponentsBuilder.fromCurrentRequest().toUriString();
-        return request.substring(0,request.lastIndexOf("/")) + "/games/" + gameModel.gameId();
+        return request.substring(0, request.lastIndexOf("/")) + "/games/" + gameModel.gameId();
     }
 
 }
