@@ -3,10 +3,10 @@ package com.backbase.kalahcodingchallenge;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+//@SpringBootTest
 class KalahCodingChallengeApplicationTests {
 
-	@Test
+//	@Test
 	void contextLoads() {
 	}
 
