@@ -2,11 +2,9 @@ package com.backbase.kalahcodingchallenge.adapter;
 
 import com.backbase.kalahcodingchallenge.model.GameDTO;
 import com.backbase.kalahcodingchallenge.model.GameModel;
+import org.springframework.stereotype.Service;
 
-public class GameDTOMapper {
+public interface GameDTOMapperI {
 
-    public GameDTO map(GameModel gameModel,String baseUrl){
-        //TODO: map DAO object to DTO
-        return null;
-    }
+    public GameDTO map(GameModel gameModel);
 }

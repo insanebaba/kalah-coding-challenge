@@ -9,13 +9,18 @@ import java.util.Collections;
 @Table(name = "games")
 public record GameModel(@Id
                         @GeneratedValue Integer gameId,
-                        @Type(type = "int-array")
-                        @Column(name = "pits", columnDefinition = "int[]")
-                        Integer[]pits,
+                        @Lob Integer[]pits,
                         @Enumerated(EnumType.STRING)GameCurrentStatus status) {
 
     public GameModel() {
-        this(null, Collections.nCopies(GameConfig.pitsSize, GameConfig.seedsCount).toArray(new Integer[GameConfig.pitsSize])
+        this(null, Collections.nCopies(GameConfig.PITS_SIZE, GameConfig.SEEDS_COUNT).toArray(new Integer[GameConfig.PITS_SIZE])
                 , GameCurrentStatus.STARTED);
     }
+
+    public GameModel(GameModel model, GameCurrentStatus status) {
+        this(model.gameId, model.pits
+                , status);
+    }
+
+
 }

@@ -1,28 +1,41 @@
 package com.backbase.kalahcodingchallenge.controller;
 
-import java.util.Map;
-
+import com.backbase.kalahcodingchallenge.adapter.GameServiceAdapterI;
+import com.backbase.kalahcodingchallenge.exception.NoMoreMovesPossibleException;
+import com.backbase.kalahcodingchallenge.model.GameDTO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
-@RequestMapping("/games")
+@RequestMapping(GameController.CONTROLLER_PATH)
 public class GameController {
 
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, String>> createNewGame() throws Exception {
-        throw new Exception("Method createNewGame not implemented");
+    private GameServiceAdapterI gameServiceAdapter;
+
+    public static final String CONTROLLER_PATH = "games";
+
+    public GameController(@Autowired GameServiceAdapterI gameServiceAdapter) {
+        this.gameServiceAdapter = gameServiceAdapter;
     }
 
-    @PutMapping(value = "/{gameId}/pits/{pitId}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, String>> makeMove(@PathVariable("gameId") final int gameId,
-            @PathVariable("pitId") final int pitId) throws Exception {
-        throw new Exception("Method makeMove not implemented");
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public GameDTO createNewGame() throws Exception {
+        return gameServiceAdapter.createNewGame();
+    }
+
+    @PutMapping("/{gameId}/pits/{pitId}")
+    @ResponseStatus(HttpStatus.OK)
+    public GameDTO makeMove(@PathVariable("gameId") final int gameId,
+                            @PathVariable("pitId") final int pitId
+    ) throws Exception, NoMoreMovesPossibleException {
+        return gameServiceAdapter.makeMove(gameId, pitId);
     }
 
 }
