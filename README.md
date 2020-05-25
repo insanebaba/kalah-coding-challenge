@@ -9,11 +9,12 @@
 6. Considering only one entity was used for operation, i.e. Kalah game, entire project is used as main directory instead of separating them by entities, i.e. if you want to add another entity to this api, e.g. _Accounts_ , create a root package __com.backbase.kalahcoding.challenge.accounts__ and then use corresponding directory structure as right now.
 7. __HATEOS__ is not used to create a URL  as It was an overhead with little benefit. But would be recommended if more features are required from it.
 8. Separation of concerns was one of the highest priorities to make this project maintainable.
+9. Endpoint for swagger http://localhost:8080/swagger-ui.html
 
 Architecture details are as below
 
 ### Package wise Architecture
-1. __adapter__ - This package provides high level adapter to interact for _controllers_ . Adapters help abstract functionality for controllers and remove any overhead of conversions, data interaction, etc. In case any conversion of exception to be done from runtime to front end exceptions . It should be done here.
+1. __facade__ - This package provides high level facade to interact for _controllers_ . _Facade_ provides simpler implementation of game service for controller and remove any overhead of conversions, data interaction, etc. In case any conversion of exception to be done from runtime to front end exceptions . It should be done here.
 2. __controller__ - This is the web controller for spring boot. This is where the api calls begin and get resolved. Any kind of changes to be done in the api should be done here.
 3. __exception__ - This package holds all the exceptions used in the application. Considering we are not separating frontend and backend exceptions for this challenge, there is not other classification done. All the exceptions in this package can be send to the user. In case you want to classify and map. 
 4. __mapper__ - This package contains mapper from DAO objects to DTO objects. I have not used any libraries for mapping as I found this to be easier. There are many customizations needed like adding URL. 
@@ -24,6 +25,11 @@ Architecture details are as below
 6. __repository__ - This package contains Database interacting repositories which are implemented using Spring CRUD repositories and injected in services.
 7. __service__ - Perhaps the most important package. This is where all the functionality is implemented. Entire game and rules are implemented here. This packages should have been tested intensively as this is where all the business logic is implemented. Any issues in game can be drilled down to here.
 8. __swagger__ - Swagger UI Configuration bean
+
+### Improvements
+1. Add Junit and integration tests(preferably mockmvc).
+2. Use [Spring REST Docs](https://docs.spring.io/spring-restdocs/docs/2.0.4.RELEASE/reference/html5/) instead of swagger via _mockmvc_.
+3. load test using loadrunner or jMeter
 
 ---
 ## Coding challenge
