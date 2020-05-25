@@ -11,7 +11,13 @@
 8. Separation of concerns was one of the highest priorities to make this project maintainable.
 9. Endpoint for swagger http://localhost:8080/swagger-ui.html
 
-Architecture details are as below
+## Running the project
+### Requirements
+1. Install [JAVA 14](https://openjdk.java.net/install/)
+2. [Install Gradle](https://gradle.org/install/)
+### Steps to run
+1. clone this directory and run _gradle clean build bootRun_
+2. If you want to open this app in intellij, don't forget to enable experimental features for jdk 14
 
 ### Package wise Architecture
 1. __facade__ - This package provides high level facade to interact for _controllers_ . _Facade_ provides simpler implementation of game service for controller and remove any overhead of conversions, data interaction, etc. In case any conversion of exception to be done from runtime to front end exceptions . It should be done here.
