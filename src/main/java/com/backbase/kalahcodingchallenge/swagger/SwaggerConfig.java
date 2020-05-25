@@ -1,5 +1,6 @@
 package com.backbase.kalahcodingchallenge.swagger;
 
+import com.backbase.kalahcodingchallenge.KalahCodingChallengeApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -17,8 +18,7 @@ public class SwaggerConfig {
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()
-                .apis(RequestHandlerSelectors.any())
-                .paths(PathSelectors.any())
+                .apis(RequestHandlerSelectors.basePackage(KalahCodingChallengeApplication.class.getPackageName()))
                 .build();
     }
 }
