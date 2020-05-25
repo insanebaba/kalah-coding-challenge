@@ -13,7 +13,7 @@
 Architecture details are as below
 
 ### Package wise Architecture
-1. __adapter__ - This package provides high level adapter to interact for _controllers_ . Adapters help abstract functionality for controllers and remove any overhead of conversions, data interaction, etc. In case any conversion of exception to be done from runtime to front end exceptions . It should be done here.
+1. __facade__ - This package provides high level facade to interact for _controllers_ . _Facade_ provides simpler implementation of game service for controller and remove any overhead of conversions, data interaction, etc. In case any conversion of exception to be done from runtime to front end exceptions . It should be done here.
 2. __controller__ - This is the web controller for spring boot. This is where the api calls begin and get resolved. Any kind of changes to be done in the api should be done here.
 3. __exception__ - This package holds all the exceptions used in the application. Considering we are not separating frontend and backend exceptions for this challenge, there is not other classification done. All the exceptions in this package can be send to the user. In case you want to classify and map. 
 4. __mapper__ - This package contains mapper from DAO objects to DTO objects. I have not used any libraries for mapping as I found this to be easier. There are many customizations needed like adding URL. 

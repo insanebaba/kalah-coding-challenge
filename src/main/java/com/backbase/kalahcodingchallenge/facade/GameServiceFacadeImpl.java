@@ -1,4 +1,4 @@
-package com.backbase.kalahcodingchallenge.adapter;
+package com.backbase.kalahcodingchallenge.facade;
 
 import com.backbase.kalahcodingchallenge.exception.GameDoesNotExistException;
 import com.backbase.kalahcodingchallenge.exception.InvalidMoveException;
@@ -10,14 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class GameServiceAdapterImpl implements GameServiceAdapterI {
+public class GameServiceFacadeImpl implements GameServiceFacadeI {
     private GameDTOMapperI gameDTOMapperI;
     private GameServiceI gameService;
 
     private String baseUrl;
 
-    public GameServiceAdapterImpl(@Autowired final GameDTOMapperI gameDTOMapperI,
-                                  @Autowired final GameServiceI gameService
+    public GameServiceFacadeImpl(@Autowired final GameDTOMapperI gameDTOMapperI,
+                                 @Autowired final GameServiceI gameService
     ) {
         this.gameDTOMapperI = gameDTOMapperI;
         this.gameService = gameService;
